@@ -15,7 +15,7 @@ class Stock(models.Model):
 
 class Watchlists(models.Model):
     WatchlistID = models.AutoField(primary_key=True)
-    ApiRef = models.ManyToManyField(Stock.ApiRef)
+    StockID = models.ManyToManyField(Stock)
 
 
 class Portfolios(models.Model):
@@ -26,7 +26,7 @@ class Portfolios(models.Model):
 
 class PortfolioStocks(models.Model):
     PortfolioID = models.ForeignKey(Portfolios, on_delete=models.CASCADE)
-    ApiRef = models.ForeignKey(Stock.ApiRef, on_delete=models.CASCADE)
+    StockID = models.ForeignKey(Stock, on_delete=models.CASCADE)
     NumberOfStocks = models.IntegerField()
 
 
@@ -52,7 +52,7 @@ class Transactions(models.Model):
         blank=False, null=False, decimal_places=2, max_digits=10)
     Quantity = models.IntegerField(null=False)
     isSold = models.BooleanField(default=False)
-    ApiRef = models.ForeignKey(Stock.ApiRef, on_delete=models.CASCADE)
+    StockID = models.ForeignKey(Stock, on_delete=models.CASCADE)
 
 
 class Leaderboard(models.Model):
