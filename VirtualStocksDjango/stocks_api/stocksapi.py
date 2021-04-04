@@ -1,4 +1,6 @@
 from nsetools import Nse as NSE
+from .models import Stock as StockModel
+from itertools import islice
 import json
 
 # self.image=image
@@ -60,3 +62,16 @@ def get_losers():
     for data in losers:
         stocks.append(get_stock_object(data).__dict__)
     return stocks
+
+
+def populate_stocks():
+    stocks = nse.get_stock_codes()
+    stock_codes = list(stocks.keys())
+    obj_set = (StockModel(ApiRef=f"{code}", StockID=stock_codes.index(
+        code)) for code in stock_codes)
+    batch_size = 100
+    while True:
+        batch = list(islice(obj_set, batch_size))
+        if not batch:
+            break
+        StockModel.objects.bulk_create(batch, batch_size)

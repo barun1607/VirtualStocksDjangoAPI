@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 from .stocksapi import *
-from .models import User
+from .models import User, Stock
 from .serializers import UserSerializer, RegistrationSerializer
 from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework.authentication import TokenAuthentication
@@ -23,7 +23,7 @@ def stock(request, name):
 @permission_classes([IsAuthenticated])
 def stocks(request):
     data = get_stocks_list()
-    return Response({"data": data}, safe=False)
+    return Response(data)
 
 
 @api_view(['GET'])
@@ -31,7 +31,7 @@ def stocks(request):
 @permission_classes([IsAuthenticated])
 def gainers(request):
     data = get_gainers()
-    return Response(data, safe=False)
+    return Response(data)
 
 
 @api_view(['GET'])
@@ -59,9 +59,12 @@ def apiHome(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def listUsers(request):
-    users = User.objects.all()
-    serializer = UserSerializer(users, many=True)
-    return Response(serializer.data)
+    if request.user.is_superuser:
+        users = User.objects.all()
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data)
+    else:
+        return Response({'response': 'You are not authorized to view that'})
 
 
 @api_view(['POST'])
@@ -82,15 +85,19 @@ def registerUser(request):
 @permission_classes([IsAuthenticated])
 def deleteUser(request, pk):
     user = get_object_or_404(User, UserID=pk)
+    if request.user != user:
+        return Response({'response': 'You are not authorized to delete that'})
     user.delete()
     return Response('User deleted')
 
 
-@api_view(['POST'])
+@api_view(['PUT'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def updateUser(request, pk):
     user = get_object_or_404(User, UserID=pk)
+    if request.user != user:
+        return Response({'response': 'You are not authorized to update that'})
     serializer = UserSerializer(user, data=request.data)
 
     if serializer.is_valid():
@@ -99,3 +106,18 @@ def updateUser(request, pk):
         return Response(data)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def populateStocksTable(request, op):
+    if request.user.is_superuser:
+        if op == "add":
+            populate_stocks()
+            return Response("Stocks table populated successfully ")
+        elif op == "delete":
+            Stock.objects.all().delete()
+            return Response("Stocks table records deleted successfully ")
+    else:
+        return Response({'response': 'You are not authorized to view that'})
