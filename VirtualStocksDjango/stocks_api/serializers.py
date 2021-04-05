@@ -1,5 +1,5 @@
-from rest_framework import serializers, status
-from .models import User, Watchlists, Portfolios
+from rest_framework import serializers
+from .models import *
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -42,11 +42,11 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
         if User.objects.filter(username=unameInp).exists():
             raise serializers.ValidationError(
-                {'usernameError': 'Username already exists'})
+                {'detail': 'Username already exists'})
 
         if password != password2:
             raise serializers.ValidationError(
-                {'passwordError': 'Passwords do not match'})
+                {'detail': 'Passwords do not match'})
 
         user.username = unameInp
         user.set_password(password)
@@ -59,4 +59,30 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
         user.save()
 
-        return user
+
+class WatchlistSerializer(serializers.ModelSerializer):
+    code = serializers.CharField()
+
+    class Meta:
+        model = WatchlistStocks
+        fields = [
+            'WatchlistID',
+            'code'
+        ]
+
+    def save(self):
+
+        watchlistID = self.validated_data['WatchlistID']
+        apiRef = self.validated_data['code']
+
+        if not Stock.objects.filter(ApiRef=apiRef).exists():
+            raise serializers.ValidationError({
+                "detail": "Stock code does not exitst"
+            })
+
+        stock = Stock.objects.get(ApiRef=apiRef)
+        watchlistItem = WatchlistStocks()
+        watchlistItem.WatchlistID = watchlistID
+        watchlistItem.StockID = stock
+
+        watchlistItem.save()
