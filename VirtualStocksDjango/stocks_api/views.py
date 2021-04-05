@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from rest_framework import serializers, status
 from rest_framework.decorators import api_view
 from .stocksapi import *
-from .models import User, Stock
-from .serializers import UserSerializer, RegistrationSerializer, WatchlistSerializer
+from .models import *
+from .serializers import *
 from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
@@ -163,3 +163,16 @@ def deleteFromWatchlist(request, code):
         return Response({"detail": "Stock removed from watchlist"})
     else:
         return Response(wlistSerializer.errors)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def viewWatchlist(request):
+    user = getUser(request)
+    userSerializer = UserSerializer(user)
+    watchlistID = userSerializer.data.get('WatchlistID')
+    watchListSet = WatchlistStocks.objects.filter(WatchlistID=watchlistID)
+    stockList = [obj.StockID for obj in watchListSet]
+    respList = [get_stock_by_name(obj.ApiRef) for obj in stockList]
+    return Response(respList)
