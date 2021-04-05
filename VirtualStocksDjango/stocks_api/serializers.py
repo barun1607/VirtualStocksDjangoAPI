@@ -81,6 +81,12 @@ class WatchlistSerializer(serializers.ModelSerializer):
             })
 
         stock = Stock.objects.get(ApiRef=apiRef)
+
+        if WatchlistStocks.objects.filter(StockID=stock.StockID, WatchlistID=watchlistID).exists():
+            raise serializers.ValidationError({
+                "detail": "Stock is already there in the watchlist"
+            })
+
         watchlistItem = WatchlistStocks()
         watchlistItem.WatchlistID = watchlistID
         watchlistItem.StockID = stock
