@@ -17,7 +17,17 @@ class Stock(models.Model):
 
 class Watchlists(models.Model):
     WatchlistID = models.AutoField(primary_key=True)
-    StockID = models.ManyToManyField(Stock)
+
+    def __str__(self):
+        return f"{self.WatchlistID}"
+
+
+class WatchlistStocks(models.Model):
+    WatchlistID = models.ForeignKey(Watchlists, on_delete=models.CASCADE)
+    StockID = models.ForeignKey(Stock, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Watchlisd ID: {self.WatchlistID}, Stock ID: {self.StockID}"
 
 
 class Portfolios(models.Model):
