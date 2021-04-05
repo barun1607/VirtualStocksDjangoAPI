@@ -14,4 +14,6 @@ urlpatterns = [
     path('populate-stocks/<str:op>',
          views.populateStocksTable, name='populate-stocks'),
     path('add-watchlist/<str:code>', views.addToWatchlist, name='add-watchlist'),
+    path('delete-watchlist/<str:code>',
+         views.deleteFromWatchlist, name='delete-watchlist'),
 ]
