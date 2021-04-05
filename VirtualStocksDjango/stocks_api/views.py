@@ -121,10 +121,10 @@ def deleteUser(request):
 def populateStocksTable(request, op):
     if op == "add":
         populate_stocks()
-        return Response({'response': "Stocks table populated successfully"})
+        return Response({'detail': "Stocks table populated successfully"})
     elif op == "delete":
         Stock.objects.all().delete()
-        return Response("Stocks table records deleted successfully ")
+        return Response({"detail": "Stocks table records deleted successfully"})
 
 
 @api_view(['POST'])
@@ -141,6 +141,25 @@ def addToWatchlist(request, code):
     wlistSerializer = WatchlistSerializer(data=data)
     if wlistSerializer.is_valid():
         wlistSerializer.save()
-        return Response({"detail": "Item added to Watchlist"})
+        return Response({"detail": "Stock added to Watchlist"})
+    else:
+        return Response(wlistSerializer.errors)
+
+
+@api_view(['DELETE'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def deleteFromWatchlist(request, code):
+    user = getUser(request)
+    userSerializer = UserSerializer(user)
+    watchlistID = userSerializer.data.get('WatchlistID')
+    data = {
+        "WatchlistID": watchlistID,
+        "code": code
+    }
+    wlistSerializer = WatchlistSerializer(data=data)
+    if wlistSerializer.is_valid():
+        wlistSerializer.delete()
+        return Response({"detail": "Stock removed from watchlist"})
     else:
         return Response(wlistSerializer.errors)
