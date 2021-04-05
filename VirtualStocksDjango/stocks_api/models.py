@@ -27,7 +27,7 @@ class WatchlistStocks(models.Model):
     StockID = models.ForeignKey(Stock, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"Watchlisd ID: {self.WatchlistID}, Stock ID: {self.StockID}"
+        return f"Watchlist ID: {self.WatchlistID}, Stock ID: {self.StockID}"
 
 
 class Portfolios(models.Model):
