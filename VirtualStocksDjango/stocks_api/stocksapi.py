@@ -50,17 +50,13 @@ def get_stock_by_name(name):
 
 def get_gainers():
     gainers = nse.get_top_gainers()
-    stocks = []
-    for data in gainers:
-        stocks.append(get_stock_object(data).__dict__)
+    stocks = [get_stock_by_name(gainer['symbol']) for gainer in gainers]
     return stocks
 
 
 def get_losers():
     losers = nse.get_top_losers()
-    stocks = []
-    for data in losers:
-        stocks.append(get_stock_object(data).__dict__)
+    stocks = [get_stock_by_name(loser['symbol']) for loser in losers]
     return stocks
 
 
