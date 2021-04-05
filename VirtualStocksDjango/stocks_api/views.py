@@ -77,9 +77,6 @@ def registerUser(request):
         return Response(serializer.errors)
 
 
-# @api_view(['POST'])
-# @authentication_classes([TokenAuthentication])
-# @permission_classes([IsAuthenticated])
 def getUser(request):
     token = request.META.get('HTTP_AUTHORIZATION')
     token_val = token.split(' ')[1]
