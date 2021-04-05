@@ -37,7 +37,7 @@ def gainers(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def losers(request):
-    data = get_gainers()
+    data = get_losers()
     return Response(data)
 
 
