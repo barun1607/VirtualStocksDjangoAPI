@@ -112,3 +112,9 @@ class WatchlistSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({
                 "detail": "Stock does not exitst in the watchlist"
             })
+
+
+class StockSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Stock
+        fields = '__all__'
