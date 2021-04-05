@@ -92,3 +92,23 @@ class WatchlistSerializer(serializers.ModelSerializer):
         watchlistItem.StockID = stock
 
         watchlistItem.save()
+
+    def delete(self):
+        watchlistID = self.validated_data['WatchlistID']
+        apiRef = self.validated_data['code']
+
+        if not Stock.objects.filter(ApiRef=apiRef).exists():
+            raise serializers.ValidationError({
+                "detail": "Stock code does not exitst"
+            })
+
+        stock = Stock.objects.get(ApiRef=apiRef)
+
+        if WatchlistStocks.objects.filter(StockID=stock.StockID, WatchlistID=watchlistID).exists():
+            watchlistItem = WatchlistStocks.objects.get(
+                StockID=stock.StockID, WatchlistID=watchlistID)
+            watchlistItem.delete()
+        else:
+            raise serializers.ValidationError({
+                "detail": "Stock does not exitst in the watchlist"
+            })
