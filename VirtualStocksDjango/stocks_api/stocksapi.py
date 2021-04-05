@@ -1,9 +1,6 @@
 from nsetools import Nse as NSE
 from .models import Stock as StockModel
 from itertools import islice
-import json
-
-# self.image=image
 
 
 class Stock():

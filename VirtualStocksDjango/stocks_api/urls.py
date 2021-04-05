@@ -10,7 +10,6 @@ urlpatterns = [
     path('register-user', views.registerUser, name='register-user'),
     path('list-users', views.listUsers, name='list-users'),
     path('delete-user', views.deleteUser, name='delete-user'),
-    # path('update-user/<str:pk>', views.updateUser, name='update-user'),
     path('populate-stocks/<str:op>',
          views.populateStocksTable, name='populate-stocks'),
     path('add-watchlist/<str:code>', views.addToWatchlist, name='add-watchlist'),

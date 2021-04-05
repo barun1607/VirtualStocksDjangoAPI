@@ -98,23 +98,6 @@ def deleteUser(request):
     return Response({"detail": "User deleted"})
 
 
-# @api_view(['PUT'])
-# @authentication_classes([TokenAuthentication])
-# @permission_classes([IsAuthenticated])
-# def updateUser(request, pk):
-#     user = get_object_or_404(User, UserID=pk)
-#     if request.user != user:
-#         return Response({'response': 'You are not authorized to update that'})
-#     serializer = UserSerializer(user, data=request.data, partial=True)
-
-#     if serializer.is_valid():
-#         serializer.update()
-#         data = serializer.data
-#         return Response(data)
-
-#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated, IsAdminUser])
