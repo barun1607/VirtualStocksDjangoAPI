@@ -16,4 +16,6 @@ urlpatterns = [
     path('add-watchlist/<str:code>', views.addToWatchlist, name='add-watchlist'),
     path('delete-watchlist/<str:code>',
          views.deleteFromWatchlist, name='delete-watchlist'),
+    path('view-watchlist', views.viewWatchlist, name='view-watchlist'),
+
 ]
