@@ -8,7 +8,8 @@ import json
 
 class Stock():
 
-    def __init__(self, high, low, previous_close, symbol, change, company_name):
+    def __init__(self, averagePrice, high, low, previous_close, symbol, change, company_name):
+        self.averagePrice = averagePrice
         self.high = high
         self.low = low
         self.previous_close = previous_close
@@ -29,11 +30,13 @@ def get_stock_object(data):
         high = data.get('highPrice')
     if low == None:
         low = data.get('lowPrice')
+    averagePrice = data.get('averagePrice')
     previous_close = data.get('previousClose')
     change = data.get('change')
     symbol = data.get('symbol')
     company_name = data.get('companyName')
-    stock = Stock(high, low, previous_close, symbol, change, company_name)
+    stock = Stock(averagePrice, high, low, previous_close,
+                  symbol, change, company_name)
     return stock
 
 
@@ -45,7 +48,7 @@ def get_stocks_list():
 def get_stock_by_name(name):
     data = nse.get_quote(name)
     stock = get_stock_object(data)
-    return (stock.__dict__)
+    return stock.__dict__
 
 
 def get_gainers():
