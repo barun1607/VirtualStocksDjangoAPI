@@ -7,6 +7,7 @@ from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.authtoken.models import Token
+from rest_framework import status
 
 
 @api_view(['GET'])
@@ -14,7 +15,7 @@ from rest_framework.authtoken.models import Token
 @permission_classes([IsAuthenticated])
 def stock(request, name):
     data = get_stock_by_name(name)
-    return Response(data)
+    return Response(data, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
@@ -22,7 +23,7 @@ def stock(request, name):
 @permission_classes([IsAuthenticated])
 def stocks(request):
     data = get_stocks_list()
-    return Response(data)
+    return Response(data, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
@@ -30,7 +31,7 @@ def stocks(request):
 @permission_classes([IsAuthenticated])
 def gainers(request):
     data = get_gainers()
-    return Response(data)
+    return Response(data, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
@@ -38,7 +39,7 @@ def gainers(request):
 @permission_classes([IsAuthenticated])
 def losers(request):
     data = get_losers()
-    return Response(data)
+    return Response(data, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
@@ -70,9 +71,9 @@ def registerUser(request):
     serializer = RegistrationSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
-        return Response({"detail": "User registered"})
+        return Response({"detail": "User registered"}, status=status.HTTP_200_OK)
     else:
-        return Response(serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 def getUser(request):
@@ -90,7 +91,7 @@ def getUser(request):
 def deleteUser(request):
     user = getUser(request)
     user.delete()
-    return Response({"detail": "User deleted"})
+    return Response({"detail": "User deleted"}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -117,11 +118,12 @@ def addToWatchlist(request, code):
         "code": code
     }
     wlistSerializer = WatchlistSerializer(data=data)
+
     if wlistSerializer.is_valid():
         wlistSerializer.save()
-        return Response({"detail": "Stock added to Watchlist"})
+        return Response({"detail": "Stock added to Watchlist"}, status=status.HTTP_200_OK)
     else:
-        return Response(wlistSerializer.errors)
+        return Response(wlistSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['DELETE'])
@@ -136,11 +138,12 @@ def deleteFromWatchlist(request, code):
         "code": code
     }
     wlistSerializer = WatchlistSerializer(data=data)
+
     if wlistSerializer.is_valid():
         wlistSerializer.delete()
-        return Response({"detail": "Stock removed from watchlist"})
+        return Response({"detail": "Stock removed from watchlist"}, status=status.HTTP_200_OK)
     else:
-        return Response(wlistSerializer.errors)
+        return Response(wlistSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
@@ -150,7 +153,33 @@ def viewWatchlist(request):
     user = getUser(request)
     userSerializer = UserSerializer(user)
     watchlistID = userSerializer.data.get('WatchlistID')
+
+    if not WatchlistStocks.objects.filter(WatchlistID=watchlistID).exists():
+        return Response({"detail": "Watchlist is empty"}, status=status.HTTP_200_OK)
+
     watchListSet = WatchlistStocks.objects.filter(WatchlistID=watchlistID)
     stockList = [obj.StockID for obj in watchListSet]
     respList = [get_stock_by_name(obj.ApiRef) for obj in stockList]
-    return Response(respList)
+    return Response(respList, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def buyStock(request, code, quantity):
+    user = getUser(request)
+    userSerializer = UserSerializer(user)
+    userID = userSerializer.data.get('UserID')
+    data = {
+        'UserID': userID,
+        'code': code,
+        'quantity': quantity
+    }
+    buySerializer = TransactStockSerializer(data=data)
+    if buySerializer.is_valid():
+        buySerializer.buy()
+        return Response({
+            "detail": "The stocks have been added to your portfolio",
+        }, status=status.HTTP_200_OK)
+    else:
+        return buySerializer.errors
