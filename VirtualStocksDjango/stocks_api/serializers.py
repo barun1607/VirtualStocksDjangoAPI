@@ -1,5 +1,9 @@
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 from .models import *
+from .stocksapi import get_stock_by_name
+from django.db.models import Sum
+from decimal import Decimal
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -77,7 +81,7 @@ class WatchlistSerializer(serializers.ModelSerializer):
 
         if not Stock.objects.filter(ApiRef=apiRef).exists():
             raise serializers.ValidationError({
-                "detail": "Stock code does not exitst"
+                "detail": "Stock code does not exist"
             })
 
         stock = Stock.objects.get(ApiRef=apiRef)
@@ -99,7 +103,7 @@ class WatchlistSerializer(serializers.ModelSerializer):
 
         if not Stock.objects.filter(ApiRef=apiRef).exists():
             raise serializers.ValidationError({
-                "detail": "Stock code does not exitst"
+                "detail": "Stock code does not exist"
             })
 
         stock = Stock.objects.get(ApiRef=apiRef)
@@ -110,11 +114,73 @@ class WatchlistSerializer(serializers.ModelSerializer):
             watchlistItem.delete()
         else:
             raise serializers.ValidationError({
-                "detail": "Stock does not exitst in the watchlist"
+                "detail": "Stock does not exist in the watchlist"
             })
 
 
-class StockSerializer(serializers.ModelSerializer):
+class TransactStockSerializer(serializers.Serializer):
+    UserID = serializers.IntegerField()
+    code = serializers.CharField()
+    quantity = serializers.IntegerField()
+
     class Meta:
-        model = Stock
-        fields = '__all__'
+        fields = [
+            'UserID',
+            'code',
+            'quantity'
+        ]
+
+    def buy(self):
+        uID = self.validated_data['UserID']
+        code = self.validated_data['code']
+        quantity = self.validated_data['quantity']
+
+        user = User.objects.get(UserID=uID)
+        stockDetails = get_stock_by_name(code)
+
+        price = Decimal(stockDetails['averagePrice'])
+        balance = user.Usermoney
+
+        if not Stock.objects.filter(ApiRef=code).exists():
+            raise serializers.ValidationError({
+                "detail": "Stock code does not exist"
+            })
+
+        stock = Stock.objects.get(ApiRef=code)
+
+        if (balance < (price * quantity)):
+            raise serializers.ValidationError({
+                "detail": "There aren't sufficient funds in your account to carry out this transaction."
+            })
+
+        user.Usermoney = balance - (price * quantity)
+        user.save()
+
+        transaction = Transactions()
+        transaction.UserID = user
+        transaction.PortfolioID = user.PortfolioID
+        transaction.Price = price
+        transaction.Quantity = quantity
+        transaction.StockID = stock
+        transaction.save()
+
+        portfolioEntry = PortfolioStocks()
+        portfolioEntry.TransactionID = transaction
+        portfolioEntry.PortfolioID = user.PortfolioID
+        portfolioEntry.StockID = stock
+        portfolioEntry.NumberOfStocks = quantity
+        portfolioEntry.save()
+
+        portfolio = Portfolios.objects.get(
+            PortfolioID=user.PortfolioID.PortfolioID)
+
+        unrealizedValue = 0
+        transactAggregate = PortfolioStocks.objects.filter(
+            PortfolioID=user.PortfolioID.PortfolioID)
+
+        for entry in transactAggregate:
+            p = entry.TransactionID.Price
+            q = entry.NumberOfStocks
+            unrealizedValue += (p * q)
+        portfolio.UnrealizedValue = unrealizedValue
+        portfolio.save()
