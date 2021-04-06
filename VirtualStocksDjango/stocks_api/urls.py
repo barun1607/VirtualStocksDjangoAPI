@@ -16,5 +16,6 @@ urlpatterns = [
     path('delete-watchlist/<str:code>',
          views.deleteFromWatchlist, name='delete-watchlist'),
     path('view-watchlist', views.viewWatchlist, name='view-watchlist'),
-
+    path('buy-stock/<str:code>/<int:quantity>',
+         views.buyStock, name='buy-stock')
 ]
