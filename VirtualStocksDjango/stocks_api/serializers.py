@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import *
 from .stocksapi import get_stock_by_name
 from decimal import Decimal
+from pprint import pprint
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -268,3 +269,55 @@ class TransactStockSerializer(serializers.Serializer):
             unrealizedValue += (p * q)
         portfolio.UnrealizedValue = unrealizedValue
         portfolio.save()
+
+
+class ViewPortfolioSerializer(serializers.Serializer):
+    PortfolioID = serializers.IntegerField()
+
+    class Meta:
+        fields = [
+            'PortfolioID'
+        ]
+
+    def view(self):
+        PortfolioID = self.validated_data['PortfolioID']
+
+        portfolioItems = PortfolioStocks.objects.filter(
+            PortfolioID=PortfolioID)
+
+        stockList = [{
+            'code': item.StockID.ApiRef,
+            'number': item.NumberOfStocks
+        } for item in portfolioItems]
+
+        compressedList = {}
+        for item in stockList:
+            if item['code'] in compressedList.keys():
+                compressedList[item['code']] += item['number']
+            else:
+                compressedList[item['code']] = item['number']
+
+        keys = list(compressedList.keys())
+        values = list(compressedList.values())
+
+        stockList = []
+        for i in range(compressedList.__len__()):
+            data = {
+                'stock': get_stock_by_name(keys[i]),
+                'number': values[i]
+            }
+            stockList.append(data)
+
+        unrealizedValueCurr = 0
+
+        for stock in stockList:
+            unrealizedValueCurr += stock['stock']['averagePrice'] * \
+                stock['number']
+
+        resp = {
+            'UnrealizedValueInitial': Portfolios.objects.get(PortfolioID=PortfolioID).UnrealizedValue,
+            'UnrealizedValueCurr': unrealizedValueCurr,
+            'stocks': stockList
+        }
+
+        return resp
