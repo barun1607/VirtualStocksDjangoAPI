@@ -223,3 +223,22 @@ def viewPortfolio(request):
         return Response(resp, status=status.HTTP_200_OK)
     else:
         return serializer.errors
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def viewTransactions(request):
+    user = getUser(request)
+    userSerializer = UserSerializer(user)
+    portfolioID = userSerializer.data.get('PortfolioID')
+    transactions = Transactions.objects.filter(PortfolioID=portfolioID)
+    serializer = TransactionsSerializer(transactions, many=True)
+    data = [{
+            "Stock": Stock.objects.get(StockID=item['StockID']).ApiRef,
+            "Price": item['Price'],
+            "Quantity": item['Quantity'],
+            "Timestamp": item['Timestamp'],
+            "Type": 'Sell' if item['isSold'] else 'Buy',
+            } for item in serializer.data]
+    return Response(data)
