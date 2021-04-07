@@ -71,7 +71,7 @@ class PortfolioStocks(models.Model):
     NumberOfStocks = models.IntegerField()
 
     def __str__(self):
-        return f"ID: {self.PortfolioID.PortfolioID}, Transaction ID: {self.TransactionID.TransactionID}, Stock: {self.StockID}"
+        return f"ID: {self.PortfolioID.PortfolioID}, Transaction ID: {self.TransactionID.TransactionID}, Stock: {self.StockID}, Quantity: {self.NumberOfStocks}"
 
 
 @receiver(post_save, sender=User)
