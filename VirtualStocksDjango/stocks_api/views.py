@@ -201,7 +201,25 @@ def sellStock(request, code, quantity):
     if sellSerializer.is_valid():
         sellSerializer.sell()
         return Response({
-            "detail": "The Stocks have been sold"
+            "detail": "The stocks have been sold"
         }, status=status.HTTP_200_OK)
     else:
         return sellSerializer.errors
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def viewPortfolio(request):
+    user = getUser(request)
+    userSerializer = UserSerializer(user)
+    portfolioID = userSerializer.data.get('PortfolioID')
+    data = {
+        "PortfolioID": portfolioID
+    }
+    serializer = ViewPortfolioSerializer(data=data)
+    if serializer.is_valid():
+        resp = serializer.view()
+        return Response(resp, status=status.HTTP_200_OK)
+    else:
+        return serializer.errors
