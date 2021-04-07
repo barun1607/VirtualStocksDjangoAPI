@@ -19,5 +19,6 @@ urlpatterns = [
     path('buy-stock/<str:code>/<int:quantity>',
          views.buyStock, name='buy-stock'),
     path('sell-stock/<str:code>/<int:quantity>',
-         views.sellStock, name='sell-stock')
+         views.sellStock, name='sell-stock'),
+    path('view-portfolio', views.viewPortfolio, name='view-portfolio'),
 ]
