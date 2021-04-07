@@ -321,3 +321,9 @@ class ViewPortfolioSerializer(serializers.Serializer):
         }
 
         return resp
+
+
+class TransactionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Transactions
+        fields = '__all__'
