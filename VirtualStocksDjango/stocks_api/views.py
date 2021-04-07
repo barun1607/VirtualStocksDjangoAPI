@@ -183,3 +183,25 @@ def buyStock(request, code, quantity):
         }, status=status.HTTP_200_OK)
     else:
         return buySerializer.errors
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def sellStock(request, code, quantity):
+    user = getUser(request)
+    userSerializer = UserSerializer(user)
+    userID = userSerializer.data.get('UserID')
+    data = {
+        'UserID': userID,
+        'code': code,
+        'quantity': quantity
+    }
+    sellSerializer = TransactStockSerializer(data=data)
+    if sellSerializer.is_valid():
+        sellSerializer.sell()
+        return Response({
+            "detail": "The Stocks have been sold"
+        }, status=status.HTTP_200_OK)
+    else:
+        return sellSerializer.errors
