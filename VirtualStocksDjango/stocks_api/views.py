@@ -242,3 +242,30 @@ def viewTransactions(request):
             "Type": 'Sell' if item['isSold'] else 'Buy',
             } for item in serializer.data]
     return Response(data)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def updateLeaderboard(request):
+    Leaderboard.objects.all().delete()
+    leaderboardItemList = []
+    for user in User.objects.all():
+        leaderboardItem = Leaderboard()
+        leaderboardItem.UserID = user
+        leaderboardItem.Unrealizedvalue = user.PortfolioID.UnrealizedValue
+        leaderboardItem.Realizedvalue = user.Usermoney
+        leaderboardItem.save()
+        leaderboardItemList.append(leaderboardItem)
+
+    pprint(leaderboardItemList)
+    return Response({
+        "detail": "Leaderboard updated"
+    })
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def viewLeaderboard(request):
+    pass
