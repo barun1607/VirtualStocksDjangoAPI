@@ -3,6 +3,7 @@ from rest_framework.decorators import api_view
 from .stocksapi import *
 from .models import *
 from .serializers import *
+from .helpers import *
 from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
@@ -74,15 +75,6 @@ def registerUser(request):
         return Response({"detail": "User registered"}, status=status.HTTP_200_OK)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-def getUser(request):
-    token = request.META.get('HTTP_AUTHORIZATION')
-    token_val = token.split(' ')[1]
-    user_ptr = Token.objects.get(
-        key=token_val).user
-    user = User.objects.get(user_ptr=user_ptr)
-    return user
 
 
 @api_view(['DELETE'])
@@ -241,7 +233,7 @@ def viewTransactions(request):
             "Timestamp": item['Timestamp'],
             "Type": 'Sell' if item['isSold'] else 'Buy',
             } for item in serializer.data]
-    return Response(data)
+    return Response(data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -255,10 +247,10 @@ def updateLeaderboard(request):
         leaderboardItem.UserID = user
         leaderboardItem.Unrealizedvalue = user.PortfolioID.UnrealizedValue
         leaderboardItem.Realizedvalue = user.Usermoney
+        leaderboardItem.UnrealizedvalueCurrent = getPriceCurrent(
+            user.PortfolioID.PortfolioID)[1]
         leaderboardItem.save()
         leaderboardItemList.append(leaderboardItem)
-
-    pprint(leaderboardItemList)
     return Response({
         "detail": "Leaderboard updated"
     })
@@ -268,4 +260,11 @@ def updateLeaderboard(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def viewLeaderboard(request):
-    pass
+    serializer = LeaderboardSerializer(Leaderboard.objects.all(), many=True)
+    data = [{
+        "username": User.objects.get(UserID=item['UserID']).username,
+        "UnrealizedValueInitial": item['Unrealizedvalue'],
+        "UnrealizedValueCurrent": item['UnrealizedvalueCurrent'],
+        "RealizedValue": item['Realizedvalue']
+    } for item in serializer.data]
+    return Response(data)
