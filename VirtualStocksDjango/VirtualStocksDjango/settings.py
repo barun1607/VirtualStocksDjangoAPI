@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'corsheaders',
     'stocks_api',
     'rest_framework',
-    'corsheaders',
 ]
 
 REST_FRAMEWORK = {
