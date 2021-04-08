@@ -21,5 +21,7 @@ urlpatterns = [
     path('sell-stock/<str:code>/<int:quantity>',
          views.sellStock, name='sell-stock'),
     path('view-portfolio', views.viewPortfolio, name='view-portfolio'),
-    path('view-transactions', views.viewTransactions, name='view-transactions')
+    path('view-transactions', views.viewTransactions, name='view-transactions'),
+    path('update-leaderboard', views.updateLeaderboard, name='update-leaderboard'),
+    path('view-leaderboard', views.viewLeaderboard, name='view-leaderboard')
 ]
