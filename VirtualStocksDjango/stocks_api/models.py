@@ -88,3 +88,6 @@ class Leaderboard(models.Model):
         blank=False, null=False, decimal_places=2, max_digits=10)
     Realizedvalue = models.DecimalField(
         blank=False, null=False, decimal_places=2, max_digits=10)
+
+    def __str__(self):
+        return f"ID: {self.LeaderboardID}, Username: {self.UserID.username}"
