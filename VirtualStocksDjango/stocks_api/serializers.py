@@ -1,5 +1,8 @@
 from rest_framework import serializers
+
 from .models import *
+from .models import Stock as StockModel
+from .helpers import *
 from .stocksapi import get_stock_by_name
 from decimal import Decimal
 from pprint import pprint
@@ -78,16 +81,16 @@ class WatchlistSerializer(serializers.ModelSerializer):
         watchlistID = self.validated_data['WatchlistID']
         apiRef = self.validated_data['code']
 
-        if not Stock.objects.filter(ApiRef=apiRef).exists():
+        if not StockModel.objects.filter(ApiRef=apiRef).exists():
             raise serializers.ValidationError({
-                "detail": "Stock code does not exist"
+                "detail": "StockModel code does not exist"
             })
 
-        stock = Stock.objects.get(ApiRef=apiRef)
+        stock = StockModel.objects.get(ApiRef=apiRef)
 
         if WatchlistStocks.objects.filter(StockID=stock.StockID, WatchlistID=watchlistID).exists():
             raise serializers.ValidationError({
-                "detail": "Stock is already there in the watchlist"
+                "detail": "StockModel is already there in the watchlist"
             })
 
         watchlistItem = WatchlistStocks()
@@ -100,12 +103,12 @@ class WatchlistSerializer(serializers.ModelSerializer):
         watchlistID = self.validated_data['WatchlistID']
         apiRef = self.validated_data['code']
 
-        if not Stock.objects.filter(ApiRef=apiRef).exists():
+        if not StockModel.objects.filter(ApiRef=apiRef).exists():
             raise serializers.ValidationError({
-                "detail": "Stock code does not exist"
+                "detail": "StockModel code does not exist"
             })
 
-        stock = Stock.objects.get(ApiRef=apiRef)
+        stock = StockModel.objects.get(ApiRef=apiRef)
 
         if WatchlistStocks.objects.filter(StockID=stock.StockID, WatchlistID=watchlistID).exists():
             watchlistItem = WatchlistStocks.objects.get(
@@ -113,7 +116,7 @@ class WatchlistSerializer(serializers.ModelSerializer):
             watchlistItem.delete()
         else:
             raise serializers.ValidationError({
-                "detail": "Stock does not exist in the watchlist"
+                "detail": "StockModel does not exist in the watchlist"
             })
 
 
@@ -140,18 +143,18 @@ class TransactStockSerializer(serializers.Serializer):
             stockDetails = get_stock_by_name(code)
         except AttributeError:
             raise serializers.ValidationError({
-                "detail": "Stock api returned null response for the given stock code"
+                "detail": "StockModel api returned null response for the given stock code"
             })
 
         price = Decimal(stockDetails['averagePrice'])
         balance = user.Usermoney
 
-        if not Stock.objects.filter(ApiRef=code).exists():
+        if not StockModel.objects.filter(ApiRef=code).exists():
             raise serializers.ValidationError({
-                "detail": "Stock code does not exist"
+                "detail": "StockModel code does not exist"
             })
 
-        stock = Stock.objects.get(ApiRef=code)
+        stock = StockModel.objects.get(ApiRef=code)
 
         if (balance < (price * quantity)):
             raise serializers.ValidationError({
@@ -161,13 +164,8 @@ class TransactStockSerializer(serializers.Serializer):
         user.Usermoney = balance - (price * quantity)
         user.save()
 
-        transaction = Transactions()
-        transaction.UserID = user
-        transaction.PortfolioID = user.PortfolioID
-        transaction.Price = price
-        transaction.Quantity = quantity
-        transaction.StockID = stock
-        transaction.save()
+        transaction = saveTransaction(
+            user, user.PortfolioID, price, quantity, stock, False)
 
         portfolioEntry = PortfolioStocks()
         portfolioEntry.TransactionID = transaction
@@ -176,19 +174,9 @@ class TransactStockSerializer(serializers.Serializer):
         portfolioEntry.NumberOfStocks = quantity
         portfolioEntry.save()
 
-        portfolio = Portfolios.objects.get(
-            PortfolioID=user.PortfolioID.PortfolioID)
+        setPrice(user.PortfolioID.PortfolioID)
 
-        unrealizedValue = 0
-        transactAggregate = PortfolioStocks.objects.filter(
-            PortfolioID=user.PortfolioID.PortfolioID)
-
-        for entry in transactAggregate:
-            p = entry.TransactionID.Price
-            q = entry.NumberOfStocks
-            unrealizedValue += (p * q)
-        portfolio.UnrealizedValue = unrealizedValue
-        portfolio.save()
+        getPriceCurrent(user.PortfolioID.PortfolioID)
 
     def sell(self):
         uID = self.validated_data['UserID']
@@ -201,18 +189,18 @@ class TransactStockSerializer(serializers.Serializer):
             stockDetails = get_stock_by_name(code)
         except AttributeError:
             raise serializers.ValidationError({
-                "detail": "Stock api returned null response for the given stock code"
+                "detail": "StockModel api returned null response for the given stock code"
             })
 
         price = Decimal(stockDetails['averagePrice'])
         balance = user.Usermoney
 
-        if not Stock.objects.filter(ApiRef=code).exists():
+        if not StockModel.objects.filter(ApiRef=code).exists():
             raise serializers.ValidationError({
-                "detail": "Stock code does not exist"
+                "detail": "StockModel code does not exist"
             })
 
-        stock = Stock.objects.get(ApiRef=code)
+        stock = StockModel.objects.get(ApiRef=code)
 
         if not PortfolioStocks.objects.filter(PortfolioID=user.PortfolioID.PortfolioID, StockID=stock.StockID).exists():
             raise serializers.ValidationError({
@@ -235,14 +223,7 @@ class TransactStockSerializer(serializers.Serializer):
         user.Usermoney = balance + (price * quantity)
         user.save()
 
-        transaction = Transactions()
-        transaction.UserID = user
-        transaction.PortfolioID = user.PortfolioID
-        transaction.Price = price
-        transaction.Quantity = quantity
-        transaction.StockID = stock
-        transaction.isSold = True
-        transaction.save()
+        saveTransaction(user, user.PortfolioID, price, quantity, stock, True)
 
         listLen = portfolioItems.__len__()
         num = quantity
@@ -256,19 +237,9 @@ class TransactStockSerializer(serializers.Serializer):
                 portfolioItems[listLen - 1].save()
                 num = 0
 
-        portfolio = Portfolios.objects.get(
-            PortfolioID=user.PortfolioID.PortfolioID)
+        setPrice(user.PortfolioID.PortfolioID)
 
-        unrealizedValue = 0
-        transactAggregate = PortfolioStocks.objects.filter(
-            PortfolioID=user.PortfolioID.PortfolioID)
-
-        for entry in transactAggregate:
-            p = entry.TransactionID.Price
-            q = entry.NumberOfStocks
-            unrealizedValue += (p * q)
-        portfolio.UnrealizedValue = unrealizedValue
-        portfolio.save()
+        getPriceCurrent(user.PortfolioID.PortfolioID)
 
 
 class ViewPortfolioSerializer(serializers.Serializer):
@@ -282,37 +253,7 @@ class ViewPortfolioSerializer(serializers.Serializer):
     def view(self):
         PortfolioID = self.validated_data['PortfolioID']
 
-        portfolioItems = PortfolioStocks.objects.filter(
-            PortfolioID=PortfolioID)
-
-        stockList = [{
-            'code': item.StockID.ApiRef,
-            'number': item.NumberOfStocks
-        } for item in portfolioItems]
-
-        compressedList = {}
-        for item in stockList:
-            if item['code'] in compressedList.keys():
-                compressedList[item['code']] += item['number']
-            else:
-                compressedList[item['code']] = item['number']
-
-        keys = list(compressedList.keys())
-        values = list(compressedList.values())
-
-        stockList = []
-        for i in range(compressedList.__len__()):
-            data = {
-                'stock': get_stock_by_name(keys[i]),
-                'number': values[i]
-            }
-            stockList.append(data)
-
-        unrealizedValueCurr = 0
-
-        for stock in stockList:
-            unrealizedValueCurr += stock['stock']['averagePrice'] * \
-                stock['number']
+        [stockList, unrealizedValueCurr] = getPriceCurrent(PortfolioID)
 
         resp = {
             'UnrealizedValueInitial': Portfolios.objects.get(PortfolioID=PortfolioID).UnrealizedValue,
@@ -326,4 +267,10 @@ class ViewPortfolioSerializer(serializers.Serializer):
 class TransactionsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transactions
+        fields = '__all__'
+
+
+class LeaderboardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Leaderboard
         fields = '__all__'
