@@ -4,7 +4,6 @@ from .models import Stock as StockModel
 from .helpers import *
 from .stocksapi import get_stock_by_name
 from decimal import Decimal
-from pprint import pprint
 
 
 class UserSerializer(serializers.ModelSerializer):
