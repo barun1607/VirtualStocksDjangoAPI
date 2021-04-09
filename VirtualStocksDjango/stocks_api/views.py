@@ -2,6 +2,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .stocksapi import *
 from .models import *
+from .models import Stock as StockModel
 from .serializers import *
 from .helpers import *
 from rest_framework.decorators import authentication_classes, permission_classes
@@ -94,7 +95,7 @@ def populateStocksTable(request, op):
         populate_stocks()
         return Response({'detail': "Stocks table populated successfully"})
     elif op == "delete":
-        Stock.objects.all().delete()
+        StockModel.objects.all().delete()
         return Response({"detail": "Stocks table records deleted successfully"})
 
 
@@ -113,7 +114,7 @@ def addToWatchlist(request, code):
 
     if wlistSerializer.is_valid():
         wlistSerializer.save()
-        return Response({"detail": "Stock added to Watchlist"}, status=status.HTTP_200_OK)
+        return Response({"detail": "StockModel added to Watchlist"}, status=status.HTTP_200_OK)
     else:
         return Response(wlistSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -133,7 +134,7 @@ def deleteFromWatchlist(request, code):
 
     if wlistSerializer.is_valid():
         wlistSerializer.delete()
-        return Response({"detail": "Stock removed from watchlist"}, status=status.HTTP_200_OK)
+        return Response({"detail": "StockModel removed from watchlist"}, status=status.HTTP_200_OK)
     else:
         return Response(wlistSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -227,7 +228,7 @@ def viewTransactions(request):
     transactions = Transactions.objects.filter(PortfolioID=portfolioID)
     serializer = TransactionsSerializer(transactions, many=True)
     data = [{
-            "Stock": Stock.objects.get(StockID=item['StockID']).ApiRef,
+            "StockModel": StockModel.objects.get(StockID=item['StockID']).ApiRef,
             "Price": item['Price'],
             "Quantity": item['Quantity'],
             "Timestamp": item['Timestamp'],
