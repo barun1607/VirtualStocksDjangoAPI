@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from io import StringIO
 import numpy as np
 from django.http import HttpResponse
-
+from datetime import datetime as dt
 
 # @api_view(['GET'])
 # @authentication_classes([TokenAuthentication])
@@ -16,19 +16,26 @@ from django.http import HttpResponse
 
 
 
-def return_graph(data):
-    print(data)
+
+def return_graph():
     sns.set()
     sns.set_theme(style="darkgrid")
-    x = data[0]
-    y = data[1]
+    x=['2021-04-08T09:55:34.246721Z', '2021-04-12T11:04:02.902895Z', '2021-04-12T11:10:12.840286Z', '2021-04-12T11:23:18.879736Z']
+    # x=data[1]``
+    data=[[485589.9, 482712.72000000003, 395263.52, 355961.12], [str(i)[0:10] for i in x]]
+    x = data[1]
+    y = data[0]
+    s = io.BytesIO()
     ax=sns.lineplot(x, y)
     ax.set_title('Your Wallet over time')
     ax.set_ylabel('Money')
     ax.set_xlabel('Time')
-    response = HttpResponse(content_type="image/jpeg")
-    plt.savefig(response, format="png")
-    return response    
+    # response = HttpResponse(content_type="image/jpeg")
+    plt.plot()
+    plt.savefig(s, format="png")
+    plt.close()
+    s = base64.b64encode(s.getvalue()).decode("utf-8").replace("\n", "")
+    return HttpResponse("data:image/png;base64,%s"%s)
     
     # imgdata = StringIO()
     # fig.savefig(imgdata, format='svg')
