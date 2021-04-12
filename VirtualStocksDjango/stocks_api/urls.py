@@ -21,5 +21,6 @@ urlpatterns = [
     path('sell-stock/<str:code>/<int:quantity>',
          views.sellStock, name='sell-stock'),
     path('view-portfolio', views.viewPortfolio, name='view-portfolio'),
-    path('view-transactions', views.viewTransactions, name='view-transactions')
+    path('view-transactions', views.viewTransactions, name='view-transactions'),
+    path('graph', views.show_graph, name='graph')
 ]

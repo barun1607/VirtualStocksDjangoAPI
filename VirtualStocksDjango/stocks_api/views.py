@@ -8,7 +8,9 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.authtoken.models import Token
 from rest_framework import status
-
+from .graph import return_graph
+from django.http import HttpResponse
+from matplotlib.backends.backend_agg import FigureCanvasAgg
 
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
@@ -162,6 +164,35 @@ def viewWatchlist(request):
     respList = [get_stock_by_name(obj.ApiRef) for obj in stockList]
     return Response(respList, status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def show_graph(request):
+    user = getUser(request)
+    userSerializer = UserSerializer(user)
+    portfolioID = userSerializer.data.get('PortfolioID')
+    transactions = Transactions.objects.filter(PortfolioID=portfolioID)
+    serializer = TransactionsSerializer(transactions, many=True)
+    data = [{
+            "Price": item['Price'],
+            "Quantity": item['Quantity'],
+            "Timestamp": item['Timestamp'],
+            "Type": 'Sell' if item['isSold'] else 'Buy',
+            } for item in serializer.data]
+
+    x=500000
+    userMoney=[]
+    userTime=[]
+
+    for transaction in data:
+        print(transaction)
+        if transaction.get('Type') == 'Sell':
+            x+=float(transaction.get('Price'))*transaction.get('Quantity')
+        else:
+            x-=float(transaction.get('Price'))*transaction.get('Quantity')
+        userMoney.append(x)
+        userTime.append(transaction.get('Timestamp'))
+    return return_graph([userMoney,userTime])
 
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
