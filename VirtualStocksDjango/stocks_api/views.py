@@ -198,6 +198,9 @@ def show_graph(request):
     return return_graph([userMoney, userTime])
 
 
+# def show_graph(request):
+#     return return_graph()
+
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
