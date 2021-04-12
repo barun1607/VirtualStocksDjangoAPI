@@ -22,5 +22,10 @@ urlpatterns = [
          views.sellStock, name='sell-stock'),
     path('view-portfolio', views.viewPortfolio, name='view-portfolio'),
     path('view-transactions', views.viewTransactions, name='view-transactions'),
+<<<<<<< HEAD
     path('graph', views.show_graph, name='graph')
+=======
+    path('update-leaderboard', views.updateLeaderboard, name='update-leaderboard'),
+    path('view-leaderboard', views.viewLeaderboard, name='view-leaderboard')
+>>>>>>> 9dc75ccb072ceef5d25af546a2a1a16c42327708
 ]

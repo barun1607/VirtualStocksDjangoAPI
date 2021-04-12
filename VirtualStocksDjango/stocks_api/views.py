@@ -2,11 +2,12 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .stocksapi import *
 from .models import *
+from .models import Stock as StockModel
 from .serializers import *
+from .helpers import *
 from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from rest_framework.authtoken.models import Token
 from rest_framework import status
 from .graph import return_graph
 from django.http import HttpResponse
@@ -78,15 +79,6 @@ def registerUser(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-def getUser(request):
-    token = request.META.get('HTTP_AUTHORIZATION')
-    token_val = token.split(' ')[1]
-    user_ptr = Token.objects.get(
-        key=token_val).user
-    user = User.objects.get(user_ptr=user_ptr)
-    return user
-
-
 @api_view(['DELETE'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -104,7 +96,7 @@ def populateStocksTable(request, op):
         populate_stocks()
         return Response({'detail': "Stocks table populated successfully"})
     elif op == "delete":
-        Stock.objects.all().delete()
+        StockModel.objects.all().delete()
         return Response({"detail": "Stocks table records deleted successfully"})
 
 
@@ -123,7 +115,7 @@ def addToWatchlist(request, code):
 
     if wlistSerializer.is_valid():
         wlistSerializer.save()
-        return Response({"detail": "Stock added to Watchlist"}, status=status.HTTP_200_OK)
+        return Response({"detail": "StockModel added to Watchlist"}, status=status.HTTP_200_OK)
     else:
         return Response(wlistSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -143,7 +135,7 @@ def deleteFromWatchlist(request, code):
 
     if wlistSerializer.is_valid():
         wlistSerializer.delete()
-        return Response({"detail": "Stock removed from watchlist"}, status=status.HTTP_200_OK)
+        return Response({"detail": "StockModel removed from watchlist"}, status=status.HTTP_200_OK)
     else:
         return Response(wlistSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -266,10 +258,44 @@ def viewTransactions(request):
     transactions = Transactions.objects.filter(PortfolioID=portfolioID)
     serializer = TransactionsSerializer(transactions, many=True)
     data = [{
-            "Stock": Stock.objects.get(StockID=item['StockID']).ApiRef,
+            "StockModel": StockModel.objects.get(StockID=item['StockID']).ApiRef,
             "Price": item['Price'],
             "Quantity": item['Quantity'],
             "Timestamp": item['Timestamp'],
             "Type": 'Sell' if item['isSold'] else 'Buy',
             } for item in serializer.data]
+    return Response(data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def updateLeaderboard(request):
+    Leaderboard.objects.all().delete()
+    leaderboardItemList = []
+    for user in User.objects.all():
+        leaderboardItem = Leaderboard()
+        leaderboardItem.UserID = user
+        leaderboardItem.Unrealizedvalue = user.PortfolioID.UnrealizedValue
+        leaderboardItem.Realizedvalue = user.Usermoney
+        leaderboardItem.UnrealizedvalueCurrent = getPriceCurrent(
+            user.PortfolioID.PortfolioID)[1]
+        leaderboardItem.save()
+        leaderboardItemList.append(leaderboardItem)
+    return Response({
+        "detail": "Leaderboard updated"
+    })
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def viewLeaderboard(request):
+    serializer = LeaderboardSerializer(Leaderboard.objects.all(), many=True)
+    data = [{
+        "username": User.objects.get(UserID=item['UserID']).username,
+        "UnrealizedValueInitial": item['Unrealizedvalue'],
+        "UnrealizedValueCurrent": item['UnrealizedvalueCurrent'],
+        "RealizedValue": item['Realizedvalue']
+    } for item in serializer.data]
     return Response(data)

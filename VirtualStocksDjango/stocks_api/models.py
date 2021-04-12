@@ -27,16 +27,18 @@ class WatchlistStocks(models.Model):
     StockID = models.ForeignKey(Stock, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"Watchlist ID: {self.WatchlistID}, Stock ID: {self.StockID}"
+        return f"{self.WatchlistID}, Stock ID: {self.StockID}"
 
 
 class Portfolios(models.Model):
     PortfolioID = models.AutoField(primary_key=True)
     UnrealizedValue = models.DecimalField(
         blank=False, null=False, decimal_places=2, max_digits=10, default=0)
+    UnrealizedValueCurrent = models.DecimalField(
+        blank=False, null=False, decimal_places=2, max_digits=10, default=0)
 
     def __str__(self):
-        return f"Portfolio ID: {self.PortfolioID}, Unrealized Value: {self.UnrealizedValue}"
+        return f"Portfolio ID: {self.PortfolioID}, Unrealized Value: {self.UnrealizedValue}, Current: {self.UnrealizedValueCurrent}"
 
 
 class User(auth.models.User):
@@ -85,6 +87,11 @@ class Leaderboard(models.Model):
     UserID = models.ForeignKey(User, on_delete=models.CASCADE)
     Timestamp = models.DateTimeField(auto_now_add=True)
     Unrealizedvalue = models.DecimalField(
-        blank=False, null=False, decimal_places=2, max_digits=10)
+        blank=False, null=False, decimal_places=2, max_digits=10, default=0)
+    UnrealizedvalueCurrent = models.DecimalField(
+        blank=False, null=False, decimal_places=2, max_digits=10, default=0)
     Realizedvalue = models.DecimalField(
         blank=False, null=False, decimal_places=2, max_digits=10)
+
+    def __str__(self):
+        return f"ID: {self.LeaderboardID}, Username: {self.UserID.username}"
