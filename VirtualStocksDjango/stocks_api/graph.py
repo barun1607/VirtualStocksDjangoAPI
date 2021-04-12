@@ -17,12 +17,12 @@ from datetime import datetime as dt
 
 
 
-def return_graph():
+def return_graph(data):
     sns.set()
     sns.set_theme(style="darkgrid")
-    x=['2021-04-08T09:55:34.246721Z', '2021-04-12T11:04:02.902895Z', '2021-04-12T11:10:12.840286Z', '2021-04-12T11:23:18.879736Z']
-    # x=data[1]``
-    data=[[485589.9, 482712.72000000003, 395263.52, 355961.12], [str(i)[0:10] for i in x]]
+    # x=['2021-04-08T09:55:34.246721Z', '2021-04-12T11:04:02.902895Z', '2021-04-12T11:10:12.840286Z', '2021-04-12T11:23:18.879736Z']
+    x=data[1]
+    data=[data[0], [str(i)[0:10] for i in x]]
     x = data[1]
     y = data[0]
     s = io.BytesIO()
