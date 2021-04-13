@@ -10,6 +10,7 @@ urlpatterns = [
     path('register-user', views.registerUser, name='register-user'),
     path('list-users', views.listUsers, name='list-users'),
     path('delete-user', views.deleteUser, name='delete-user'),
+    path('user-details', views.userDetails, name='user-details'),
     path('populate-stocks/<str:op>',
          views.populateStocksTable, name='populate-stocks'),
     path('add-watchlist/<str:code>', views.addToWatchlist, name='add-watchlist'),
