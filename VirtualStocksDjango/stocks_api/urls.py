@@ -23,6 +23,7 @@ urlpatterns = [
     path('view-portfolio', views.viewPortfolio, name='view-portfolio'),
     path('view-transactions', views.viewTransactions, name='view-transactions'),
     path('graph', views.show_graph, name='graph'),
+    path('total-profit', views.get_profit, name='profit'),
     path('update-leaderboard', views.updateLeaderboard, name='update-leaderboard'),
     path('view-leaderboard', views.viewLeaderboard, name='view-leaderboard')
 ]
