@@ -10,6 +10,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework import status
 from .graph import return_graph
+from .graph import return_pie_chart
 from django.http import HttpResponse
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 
@@ -170,7 +171,7 @@ def viewWatchlist(request):
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-def show_graph(request):
+def show_user_graph(request):
     user = getUser(request)
     userSerializer = UserSerializer(user)
     portfolioID = userSerializer.data.get('PortfolioID')
@@ -196,6 +197,33 @@ def show_graph(request):
         userMoney.append(x)
         userTime.append(transaction.get('Timestamp'))
     return return_graph([userMoney, userTime])
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def show_portfolio_graph(request):
+    user = getUser(request)
+    userSerializer = UserSerializer(user)
+    portfolioID = userSerializer.data.get('PortfolioID')
+    data = {
+        "PortfolioID": portfolioID
+    }
+    stocks=[]
+    quantities=[]
+    prices=[]
+    names=[]
+    serializer = ViewPortfolioSerializer(data=data)
+    if serializer.is_valid():
+        resp = serializer.view()
+        stocks=resp.get('stocks')
+        print(stocks)
+        for stock in stocks:
+            quantities.append(stock.get('number'))
+            prices.append(stock.get('stock').get('averagePrice'))
+            names.append(stock.get('stock').get('company_name'))
+        return return_pie_chart([quantities,prices,names])
+    else:
+        return serializer.errors
 
 
 # def show_graph(request):

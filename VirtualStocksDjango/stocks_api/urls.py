@@ -23,8 +23,8 @@ urlpatterns = [
          views.sellStock, name='sell-stock'),
     path('view-portfolio', views.viewPortfolio, name='view-portfolio'),
     path('view-transactions', views.viewTransactions, name='view-transactions'),
-    path('graph', views.show_graph, name='graph'),
-    path('total-profit', views.get_profit, name='profit'),
+    path('graph', views.show_user_graph, name='user-graph'),
+    path('portfolio-graph', views.show_portfolio_graph, name='portfolio-graph'),
     path('update-leaderboard', views.updateLeaderboard, name='update-leaderboard'),
     path('view-leaderboard', views.viewLeaderboard, name='view-leaderboard')
 ]

@@ -14,6 +14,32 @@ from datetime import datetime as dt
 #     plt.show()
 
 
+def return_pie_chart(data):
+    sns.set()
+    sns.set_theme(style="darkgrid")
+    s = io.BytesIO()
+    quantities=data[0]
+    prices=data[1]
+    names=data[2]
+    print(quantities)
+    print(prices)
+    print(names)
+    sizes=[]
+    for i in range(0,len(prices)):
+        sizes.append(prices[i]*quantities[i])
+    total=sum(sizes)
+    sizes=[i/total for i in sizes]
+    labels=[]
+    for i in range(0,len(names)):
+        labels.append(names[i]+'\n'+str(prices[i]*quantities[i])+'Rs')
+    ax=plt.pie(sizes,labels=labels)
+    plt.axis('equal')
+    plt.plot()
+    plt.savefig(s, format="png")
+    plt.close()
+    s = base64.b64encode(s.getvalue()).decode("utf-8").replace("\n", "")
+    return HttpResponse("data:image/png;base64,%s"%s)
+
 
 
 
