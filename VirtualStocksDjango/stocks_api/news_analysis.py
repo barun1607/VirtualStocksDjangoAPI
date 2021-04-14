@@ -8,13 +8,17 @@ from datetime import datetime
 from datetime import timedelta
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.decorators import api_view
+from django.http import HttpResponse
 
+@api_view(['GET'])
 def get_news_links(request, name):
     googlenews = GoogleNews()
     print(name)
     googlenews.get_news(name+'stock')
     links=googlenews.results()
-    return Response(links, status=status.HTTP_200_OK)
+    print(links)
+    return HttpResponse(links)
 
 def get_news_analysis(request, name):
     headlines=[]
