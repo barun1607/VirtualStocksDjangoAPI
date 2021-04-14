@@ -8,7 +8,7 @@ from datetime import datetime
 from datetime import timedelta
 from rest_framework.response import Response
 
-def get_news(request, name):
+def get_news_links(request, name):
     googlenews = GoogleNews()
     googlenews.get_news(name+'stock')
     links=googlenews.results()
