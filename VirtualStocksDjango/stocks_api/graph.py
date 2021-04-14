@@ -18,6 +18,7 @@ def return_pie_chart(data):
     sns.set()
     sns.set_theme(style="darkgrid")
     s = io.BytesIO()
+    plt.style.use('ggplot')
     quantities=data[0]
     prices=data[1]
     names=data[2]
@@ -31,8 +32,8 @@ def return_pie_chart(data):
     sizes=[i/total for i in sizes]
     labels=[]
     for i in range(0,len(names)):
-        labels.append(names[i]+'\n'+str(prices[i]*quantities[i])+'Rs')
-    ax=plt.pie(sizes,labels=labels)
+        labels.append(names[i]+'\n'+str(int(prices[i]*quantities[i]))+'Rs')
+    ax=plt.pie(sizes,labels=labels,autopct='%1.0f%%',radius=1.5,pctdistance=0.8,)
     plt.axis('equal')
     plt.plot()
     plt.savefig(s, format="png")

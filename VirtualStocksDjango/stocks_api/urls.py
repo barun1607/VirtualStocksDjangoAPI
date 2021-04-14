@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .news_analysis import get_news_analysis
 
 urlpatterns = [
     path('stock/<str:name>', views.stock, name='stock'),
@@ -26,5 +27,6 @@ urlpatterns = [
     path('graph', views.show_user_graph, name='user-graph'),
     path('portfolio-graph', views.show_portfolio_graph, name='portfolio-graph'),
     path('update-leaderboard', views.updateLeaderboard, name='update-leaderboard'),
-    path('view-leaderboard', views.viewLeaderboard, name='view-leaderboard')
+    path('view-leaderboard', views.viewLeaderboard, name='view-leaderboard'),
+    path('news-graph', get_news_analysis, name='view-news-graph')
 ]
