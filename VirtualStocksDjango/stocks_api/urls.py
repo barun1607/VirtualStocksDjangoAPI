@@ -29,6 +29,6 @@ urlpatterns = [
     path('portfolio-graph', views.show_portfolio_graph, name='portfolio-graph'),
     path('update-leaderboard', views.updateLeaderboard, name='update-leaderboard'),
     path('view-leaderboard', views.viewLeaderboard, name='view-leaderboard'),
-    path('news-graph', get_news_analysis, name='view-news-graph'),
+    path('news-graph/<str:name>', get_news_analysis, name='view-news-graph'),
     path('news-links/<str:name>', get_news_links, name='view-news-links')
 ]

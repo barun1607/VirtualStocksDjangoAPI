@@ -1,7 +1,13 @@
 import nltk
 nltk.download('vader_lexicon')
 from GoogleNews import GoogleNews
+
 # from newsplease import NewsPlease
+import io
+import pandas as pd
+import base64
+from io import StringIO
+from matplotlib import cm
 import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import datetime
@@ -10,6 +16,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 from django.http import HttpResponse
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
 @api_view(['GET'])
 def get_news_links(request, name):
@@ -20,16 +27,18 @@ def get_news_links(request, name):
     print(links)
     return HttpResponse(links)
 
+@api_view(['GET'])
 def get_news_analysis(request, name):
     headlines=[]
     dates=[]
-
+    s = io.BytesIO()
     new_words = {
         'crushes': 10,
         'beats': 5,
         'misses': -5,
         'fell':-80,
         'trouble': -10,
+        'surged':-100,
         'rises':20,
         'new features':10,
         'product fail':-10,
@@ -78,7 +87,6 @@ def get_news_analysis(request, name):
 
     # # Convert the date column from string to datetime
     scored_news['Date'] = pd.to_datetime(scored_news.Date).dt.date
-    print(scored_news.head())
 
     # Group by date and ticker columns from scored_news and calculate the mean
     mean_c = scored_news.groupby(['Date']).mean()
@@ -91,6 +99,12 @@ def get_news_analysis(request, name):
     mean_c = mean_c.xs('compound', axis='columns')
     # Plot a bar chart with pandas
 
-    mean_c.plot(kind='bar', figsize=(20,5), width=1,rot=45)
+    ax=mean_c.plot(kind='bar', figsize=(20,5),rot=45,title='Market Sentiment based on News',colormap=cm.gist_rainbow,stacked=True)
+    ax.set_ylabel('Sentiment')
+    plt.plot()
+    plt.savefig(s, format="png")
+    plt.close()
+    s = base64.b64encode(s.getvalue()).decode("utf-8").replace("\n", "")
+    return HttpResponse("data:image/png;base64,%s"%s)
 
 
