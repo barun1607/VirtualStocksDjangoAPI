@@ -19,6 +19,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 from django.http import HttpResponse
+from django.http import JsonResponse
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
 @api_view(['GET'])
@@ -28,7 +29,7 @@ def get_news_links(request, name):
     googlenews.get_news(name+'stock')
     links=googlenews.results()
     print(links)
-    return HttpResponse(links)
+    return JsonResponse(links,safe=False)
 
 @api_view(['GET'])
 def get_news_analysis(request, name):
