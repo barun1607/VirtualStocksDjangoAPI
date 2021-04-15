@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 from .news_analysis import get_news_analysis
 from .news_analysis import get_news_links
+from .news_analysis import get_news_analysis_for_day
 
 urlpatterns = [
     path('stock/<str:name>', views.stock, name='stock'),
@@ -30,5 +31,6 @@ urlpatterns = [
     path('update-leaderboard', views.updateLeaderboard, name='update-leaderboard'),
     path('view-leaderboard', views.viewLeaderboard, name='view-leaderboard'),
     path('news-graph/<str:name>', get_news_analysis, name='view-news-graph'),
+    path('news-graph-date/<str:name>/<str:date>', get_news_analysis_for_day, name='view-news-graph-single'),
     path('news-links/<str:name>', get_news_links, name='view-news-links')
 ]
