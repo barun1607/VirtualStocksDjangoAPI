@@ -101,7 +101,7 @@ def get_news_analysis(request, name):
     # Group by date and ticker columns from scored_news and calculate the mean
     mean_c = scored_news.groupby(['Date']).mean()
     mean_c = mean_c.xs('compound', axis='columns')
-    ax=mean_c.plot(kind='bar', figsize=(20,5),rot=45,title='Market Sentiment based on News',colormap=cm.gist_rainbow,stacked=True)
+    ax=mean_c.plot(kind='bar', figsize=(10,3),rot=45,title='Market Sentiment based on News',colormap=cm.gist_rainbow,stacked=True)
     ax.set_ylabel('Sentiment')
     plt.plot()
     plt.savefig(s, format="png")
@@ -191,7 +191,7 @@ def get_news_analysis_for_day(request, name,date):
     plot_day.columns = ['negative', 'positive', 'neutral']
 
     # Plot a stacked bar chart
-    ax=plot_day.plot(kind='bar', color=COLORS, figsize=(20,5), width=0.3)
+    ax=plot_day.plot(kind='bar', color=COLORS, figsize=(10,3), width=0.3)
     ax.set_ylabel('Sentiment')
 
     # mean_c = scored_news.groupby(['Date']).mean()
